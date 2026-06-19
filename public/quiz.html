@@ -171,7 +171,18 @@
                 document.getElementById('casePanel').hidden = false;
                 showCase();
             } catch (error) {
-                alert('事件ファイルの生成に失敗しました: ' + error.message);
+                console.error('Case generation failed. Using fallback cases:', error);
+                cases = createFallbackCases(theme, difficulty, count);
+                currentTheme = theme;
+                currentDifficulty = `${difficulty} / 予備`;
+                currentIndex = 0;
+                score = 0;
+                answered = false;
+
+                document.getElementById('setupPanel').hidden = true;
+                document.getElementById('resultPanel').hidden = true;
+                document.getElementById('casePanel').hidden = false;
+                showCase();
             } finally {
                 setLoading(false);
             }

@@ -11,12 +11,12 @@ app.use(express.static('public'));
 
 // ===== 設定 =====
 // 利用するLLMプロバイダを選択します（'openai' または 'gemini'）
-const PROVIDER = 'openai';
+const PROVIDER = process.env.PROVIDER || 'openai';
 
 // プロバイダごとに利用するモデル
 const MODELS = {
-    openai: 'gpt-5.5',        // OpenAI（デフォルト）
-    gemini: 'gemini-3.5-flash', // Google Gemini
+    openai: process.env.OPENAI_MODEL || 'gpt-5.5',
+    gemini: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
 };
 const MODEL = MODELS[PROVIDER];
 
@@ -77,7 +77,11 @@ app.post('/api/', async (req, res) => {
     } catch (error) {
         // 詳細はサーバーログにのみ出力し、クライアントには汎用メッセージを返す
         console.error('API Error:', error);
-        res.status(500).json({ error: 'Failed to generate content. Please try again.' });
+        const payload = { error: 'Failed to generate content. Please try again.' };
+        if (process.env.SHOW_ERROR_DETAILS === 'true') {
+            payload.details = error.message;
+        }
+        res.status(500).json(payload);
     }
 });
 
@@ -113,8 +117,8 @@ async function callOpenAI(prompt) {
     });
 
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error?.message || 'OpenAI API error');
+        const error = await safeReadJson(response);
+        throw new Error(error.error?.message || error.message || `OpenAI API error (${response.status})`);
     }
 
     const data = await response.json();
@@ -145,13 +149,21 @@ async function callGemini(prompt) {
     });
 
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error?.message || 'Gemini API error');
+        const error = await safeReadJson(response);
+        throw new Error(error.error?.message || error.message || `Gemini API error (${response.status})`);
     }
 
     const data = await response.json();
     const responseText = data.candidates[0].content.parts[0].text;
     return extractArray(responseText);
+}
+
+async function safeReadJson(response) {
+    try {
+        return await response.json();
+    } catch (error) {
+        return { message: await response.text().catch(() => '') };
+    }
 }
 
 // LLM が返した JSON 文字列をパースし、事件データらしい配列を優先して取り出す
