@@ -107,7 +107,7 @@ async function callOpenAI(prompt) {
             messages: [
                 { role: 'system', content: prompt }
             ],
-            max_completion_tokens: 2000,
+            max_completion_tokens: 4000,
             response_format: { type: "json_object" }
         })
     });
@@ -154,7 +154,7 @@ async function callGemini(prompt) {
     return extractArray(responseText);
 }
 
-// LLM が返した JSON 文字列をパースし、最初に見つかった配列を取り出す
+// LLM が返した JSON 文字列をパースし、事件データらしい配列を優先して取り出す
 function extractArray(responseText) {
     let parsedData;
     try {
@@ -163,11 +163,66 @@ function extractArray(responseText) {
         throw new Error('Failed to parse LLM response: ' + parseError.message);
     }
 
-    const arrayData = Object.values(parsedData).find(Array.isArray);
+    const arrayData = findCaseCollection(parsedData) || findArray(parsedData);
     if (!arrayData) {
         throw new Error('No array found in the LLM response object.');
     }
     return arrayData;
+}
+
+function findCaseCollection(value) {
+    if (Array.isArray(value) && value.some(isCaseLikeObject)) {
+        return value;
+    }
+
+    if (isCaseLikeObject(value)) {
+        return [value];
+    }
+
+    if (!value || typeof value !== 'object') {
+        return null;
+    }
+
+    for (const child of Object.values(value)) {
+        const arrayData = findCaseCollection(child);
+        if (arrayData) {
+            return arrayData;
+        }
+    }
+
+    return null;
+}
+
+function isCaseLikeObject(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return false;
+    }
+
+    const keys = Object.keys(value);
+    return keys.some(key => ['testimonies', 'statements', 'witnesses', '証言', '証言リスト'].includes(key));
+}
+
+function findArray(value) {
+    if (Array.isArray(value)) {
+        return value;
+    }
+
+    if (!value || typeof value !== 'object') {
+        return null;
+    }
+
+    if (Array.isArray(value.data)) {
+        return value.data;
+    }
+
+    for (const child of Object.values(value)) {
+        const arrayData = findArray(child);
+        if (arrayData) {
+            return arrayData;
+        }
+    }
+
+    return null;
 }
 
 app.listen(PORT, () => {

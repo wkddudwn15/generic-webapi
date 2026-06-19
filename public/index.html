@@ -28,11 +28,15 @@
                 return;
             }
 
+            const labels = {
+                'quiz.html': 'AI裁判クイズ Lite'
+            };
+
             files.forEach(name => {
                 const li = document.createElement('li');
                 const a = document.createElement('a');
                 a.href = name;
-                a.textContent = name;
+                a.textContent = labels[name] || name;
                 li.appendChild(a);
                 list.appendChild(li);
             });

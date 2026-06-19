@@ -3,103 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Quiz Generator</title>
+    <title>AI裁判クイズ Lite</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="quiz.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>ITパスポート対策クイズ</h1>
-        </div>
+    <main class="app-shell">
+        <header class="app-header">
+            <div>
+                <p class="eyebrow">Contradiction Trial</p>
+                <h1>AI裁判クイズ Lite</h1>
+            </div>
+            <button class="ghost-button" type="button" onclick="restartQuiz()">最初から</button>
+        </header>
 
-        <div class="quiz-container">
-            <!-- クイズ設定画面 -->
-            <div class="quiz-setup" id="quizSetup">
-                <div class="form-group">
-                    <label for="quizTitle">クイズのタイトル:</label>
-                    <input type="text" id="quizTitle" placeholder="例: ITパスポート対策クイズ" value="ITパスポート対策クイズ">
+        <section class="setup-panel" id="setupPanel">
+            <div class="field">
+                <label for="theme">テーマ</label>
+                <select id="theme">
+                    <option value="日常事件">日常事件</option>
+                    <option value="学校">学校</option>
+                    <option value="オフィス">オフィス</option>
+                    <option value="ファンタジー">ファンタジー</option>
+                    <option value="SF">SF</option>
+                    <option value="江戸時代">江戸時代</option>
+                    <option value="IT企業">IT企業</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="difficulty">難易度</label>
+                <select id="difficulty">
+                    <option value="やさしい">やさしい</option>
+                    <option value="ふつう" selected>ふつう</option>
+                    <option value="むずかしい">むずかしい</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="questionCount">事件数</label>
+                <input id="questionCount" type="number" min="1" max="10" value="3">
+            </div>
+
+            <button class="primary-button" type="button" onclick="generateCases()">開廷する</button>
+        </section>
+
+        <section class="status-strip">
+            <div>
+                <span>事件</span>
+                <strong id="progressText">-</strong>
+            </div>
+            <div>
+                <span>正解</span>
+                <strong id="scoreText">0</strong>
+            </div>
+            <div>
+                <span>テーマ</span>
+                <strong id="themeText">-</strong>
+            </div>
+            <div>
+                <span>難易度</span>
+                <strong id="difficultyText">-</strong>
+            </div>
+        </section>
+
+        <section class="case-layout" id="casePanel" hidden>
+            <article class="case-file">
+                <div class="case-heading">
+                    <p class="eyebrow">Case File</p>
+                    <h2 id="caseTitle">事件タイトル</h2>
                 </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="questionCount">問題数:</label>
-                        <input type="number" id="questionCount" min="1" max="20" value="5">
-                    </div>
-                    
-                    <div class="form-group">
-                        <button class="btn" onclick="generateQuiz()">クイズを生成</button>
-                    </div>
+
+                <div class="summary-box">
+                    <h3>事件概要</h3>
+                    <p id="caseSummary"></p>
                 </div>
-            </div>
 
-            <!-- クイズ実行画面 -->
-            <div class="quiz-playing" id="quizPlaying">
-                <div class="quiz-progress" id="quizProgress"></div>
-                <h2 id="quizTitleDisplay"></h2>
-                
-                <div class="question" id="currentQuestion"></div>
-                
-                <ul class="selections" id="selections"></ul>
-                
-                <div class="answer-feedback" id="answerFeedback"></div>
-                
-                <button class="btn" id="nextBtn" onclick="nextQuestion()" style="display: none;">次の問題</button>
-                <button class="btn" id="finishBtn" onclick="showResults()" style="display: none;">結果を見る</button>
-            </div>
+                <div class="evidence-box">
+                    <h3>証拠</h3>
+                    <ul id="evidenceList"></ul>
+                </div>
+            </article>
 
-            <!-- 結果画面 -->
-            <div class="quiz-results" id="quizResults">
-                <h2>クイズ結果</h2>
-                <div class="score" id="finalScore"></div>
-                <button class="btn" onclick="restartQuiz()">新しいクイズを作成</button>
-            </div>
-        </div>
+            <article class="testimony-panel">
+                <div class="panel-heading">
+                    <h2>矛盾している証言を選べ</h2>
+                    <span id="selectedState">未選択</span>
+                </div>
+                <div id="testimonyList" class="testimony-list"></div>
 
-        <div class="status" id="status">Ready</div>
-        <div class="loading" id="loading">クイズを生成中...</div>
-    </div>
+                <div class="verdict-box" id="verdictBox" hidden>
+                    <p class="verdict-label" id="verdictLabel"></p>
+                    <p id="explanationText"></p>
+                    <p class="judge-comment" id="judgeComment"></p>
+                </div>
+
+                <div class="actions">
+                    <button class="secondary-button" id="nextButton" type="button" onclick="nextCase()" disabled>次の事件</button>
+                    <button class="ghost-button" type="button" onclick="restartQuiz()">やり直す</button>
+                </div>
+            </article>
+        </section>
+
+        <section class="result-panel" id="resultPanel" hidden>
+            <p class="eyebrow">Verdict</p>
+            <h2>最終評決</h2>
+            <p class="final-score" id="finalScore"></p>
+            <p id="finalComment"></p>
+            <button class="primary-button" type="button" onclick="restartQuiz()">もう一度開廷する</button>
+        </section>
+
+        <div class="loading" id="loading">事件ファイルを生成中...</div>
+    </main>
 
     <script>
-        let quizData = [];
-        let currentQuestionIndex = 0;
+        let cases = [];
+        let currentIndex = 0;
         let score = 0;
-        let selectedAnswer = null;
-        let hasAnswered = false;
+        let answered = false;
+        let currentTheme = '-';
+        let currentDifficulty = '-';
 
-        // 初期化
-        document.addEventListener('DOMContentLoaded', function() {
-            updateStatus();
-        });
+        async function generateCases() {
+            const theme = document.getElementById('theme').value;
+            const difficulty = document.getElementById('difficulty').value;
+            const count = Number(document.getElementById('questionCount').value);
 
-        // ステータス更新
-        function updateStatus() {
-            const statusEl = document.getElementById('status');
-            statusEl.textContent = 'Ready to generate ITパスポート quiz';
-            statusEl.style.color = '#28a745';
-        }
-
-        // クイズ生成
-        async function generateQuiz() {
-            const title = document.getElementById('quizTitle').value.trim();
-            const count = parseInt(document.getElementById('questionCount').value);
-
-            if (!title || count < 1) {
-                alert('すべての項目を正しく入力してください');
+            if (!Number.isInteger(count) || count < 1 || count > 10) {
+                alert('事件数は1から10の範囲で指定してください。');
                 return;
             }
 
-            document.getElementById('loading').classList.add('show');
+            setLoading(true);
 
             try {
                 const response = await fetch('/api/', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        title: title,
-                        count: count
+                        title: 'AI裁判クイズ Lite',
+                        count,
+                        theme,
+                        difficulty
                     })
                 });
 
@@ -108,132 +153,294 @@
                     throw new Error(error.error || 'API error');
                 }
 
-                const data = await response.json();
-                quizData = data.data;
-
-                if (!Array.isArray(quizData) || quizData.length === 0) {
-                    throw new Error('Invalid quiz data format');
+                const payload = await response.json();
+                cases = normalizeCases(payload.data);
+                if (cases.length === 0) {
+                    console.warn('Invalid case payload. Using fallback cases:', payload);
+                    cases = createFallbackCases(theme, difficulty, count);
                 }
 
-                currentQuestionIndex = 0;
+                currentTheme = theme;
+                currentDifficulty = difficulty;
+                currentIndex = 0;
                 score = 0;
-                document.getElementById('quizTitleDisplay').textContent = data.title;
-                startQuiz();
-                
+                answered = false;
+
+                document.getElementById('setupPanel').hidden = true;
+                document.getElementById('resultPanel').hidden = true;
+                document.getElementById('casePanel').hidden = false;
+                showCase();
             } catch (error) {
-                console.error('Error:', error);
-                alert('クイズの生成に失敗しました: ' + error.message);
+                alert('事件ファイルの生成に失敗しました: ' + error.message);
             } finally {
-                document.getElementById('loading').classList.remove('show');
+                setLoading(false);
             }
         }
 
-        // クイズ開始
-        function startQuiz() {
-            document.getElementById('quizSetup').style.display = 'none';
-            document.getElementById('quizPlaying').style.display = 'block';
-            document.getElementById('quizResults').style.display = 'none';
-            showQuestion();
+        function normalizeCases(rawCases) {
+            const source = Array.isArray(rawCases) ? rawCases : [rawCases];
+            return source
+                .map(normalizeCase)
+                .filter(Boolean);
         }
 
-        // 問題表示
-        function showQuestion() {
-            if (currentQuestionIndex >= quizData.length) {
+        function normalizeCase(item) {
+            if (!item || typeof item !== 'object') return null;
+
+            const testimonies = getArrayValue(item, ['testimonies', 'statements', 'witnesses', '証言', '証言リスト', '証人']);
+            if (testimonies.length < 3) return null;
+
+            const evidence = getArrayValue(item, ['evidence', 'proof', 'clues', 'facts', '証拠', '証拠リスト', '手がかり']);
+            const answer = normalizeAnswer(
+                item.answer ?? item.correctAnswer ?? item.contradictionIndex ?? item.invalidIndex ?? item.correctIndex ??
+                    item.contradiction ?? item.liar ?? item.falseTestimony ?? item.正解 ?? item.矛盾,
+                testimonies
+            );
+            if (!Number.isInteger(answer) || answer < 0 || answer > 2) return null;
+
+            return {
+                caseTitle: getStringValue(item, ['caseTitle', 'title', 'name', '事件タイトル', 'タイトル'], '無題の事件'),
+                caseSummary: getStringValue(item, ['caseSummary', 'summary', 'description', '事件概要', '概要'], '事件概要がありません。'),
+                evidence: evidence.length ? evidence.slice(0, 3) : ['証拠は事件概要に含まれています。'],
+                testimonies: testimonies.slice(0, 3),
+                answer,
+                explanation: getStringValue(item, ['explanation', 'reason', '解説', '正解理由', '理由'], 'この証言が証拠と矛盾しています。'),
+                judgeComment: getStringValue(item, ['judgeComment', 'comment', '裁判官コメント', 'コメント'], '証拠と証言の食い違いを確認しましょう。')
+            };
+        }
+
+        function getArrayValue(item, keys) {
+            for (const key of keys) {
+                if (Array.isArray(item[key])) {
+                    return item[key].map(formatListItem).filter(Boolean);
+                }
+                if (item[key] && typeof item[key] === 'object') {
+                    return Object.values(item[key]).map(formatListItem).filter(Boolean);
+                }
+            }
+            return [];
+        }
+
+        function formatListItem(value) {
+            if (value === undefined || value === null) return '';
+            if (typeof value !== 'object') return String(value).trim();
+
+            const speaker = value.speaker || value.name || value.witness || value.証言者 || value.名前 || '';
+            const text = value.text || value.statement || value.testimony || value.content || value.証言 || value.内容 || '';
+            const formatted = [speaker, text].filter(Boolean).join(': ');
+            return formatted || JSON.stringify(value);
+        }
+
+        function getStringValue(item, keys, fallback) {
+            for (const key of keys) {
+                if (item[key] !== undefined && item[key] !== null && String(item[key]).trim()) {
+                    return String(item[key]).trim();
+                }
+            }
+            return fallback;
+        }
+
+        function normalizeAnswer(value, testimonies) {
+            if (typeof value === 'number') {
+                return value;
+            }
+
+            const text = String(value || '').trim();
+            const letterMatch = text.match(/[ABCＡＢＣ]/i);
+            if (letterMatch) {
+                return 'ABC'.indexOf(letterMatch[0].toUpperCase().replace(/[Ａ-Ｃ]/g, char => String.fromCharCode(char.charCodeAt(0) - 0xFEE0)));
+            }
+
+            const numberMatch = text.match(/[0-9０-９]/);
+            if (!numberMatch) {
+                return testimonies.findIndex(testimony => testimony.includes(text) || text.includes(testimony));
+            }
+
+            const normalizedNumber = Number(numberMatch[0].replace(/[０-９]/g, char => String(char.charCodeAt(0) - 0xFEE0)));
+            if (normalizedNumber === 0) return 0;
+            return normalizedNumber >= 1 && normalizedNumber <= 3 ? normalizedNumber - 1 : normalizedNumber;
+        }
+
+        function showCase() {
+            const current = cases[currentIndex];
+            answered = false;
+
+            document.getElementById('caseTitle').textContent = current.caseTitle;
+            document.getElementById('caseSummary').textContent = current.caseSummary;
+            document.getElementById('selectedState').textContent = '未選択';
+            document.getElementById('verdictBox').hidden = true;
+            document.getElementById('nextButton').disabled = true;
+
+            const evidenceList = document.getElementById('evidenceList');
+            evidenceList.innerHTML = '';
+            current.evidence.forEach(text => {
+                const li = document.createElement('li');
+                li.textContent = text;
+                evidenceList.appendChild(li);
+            });
+
+            const testimonyList = document.getElementById('testimonyList');
+            testimonyList.innerHTML = '';
+            current.testimonies.forEach((text, index) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'testimony-card';
+                button.innerHTML = `<span>証言 ${index + 1}</span><strong>${escapeHtml(text)}</strong>`;
+                button.onclick = () => chooseTestimony(index);
+                testimonyList.appendChild(button);
+            });
+
+            updateStatus();
+        }
+
+        function chooseTestimony(index) {
+            if (answered) return;
+            answered = true;
+
+            const current = cases[currentIndex];
+            const isCorrect = index === current.answer;
+            if (isCorrect) {
+                score += 1;
+            }
+
+            document.querySelectorAll('.testimony-card').forEach((card, cardIndex) => {
+                card.disabled = true;
+                if (cardIndex === current.answer) {
+                    card.classList.add('correct');
+                } else if (cardIndex === index) {
+                    card.classList.add('incorrect');
+                }
+            });
+
+            document.getElementById('selectedState').textContent = isCorrect ? '正解' : '不正解';
+            document.getElementById('verdictBox').hidden = false;
+            document.getElementById('verdictLabel').textContent = isCorrect ? '判決: 矛盾を認定' : '判決: 見落としあり';
+            document.getElementById('verdictBox').className = `verdict-box ${isCorrect ? 'correct' : 'incorrect'}`;
+            document.getElementById('explanationText').textContent = current.explanation;
+            document.getElementById('judgeComment').textContent = current.judgeComment;
+            document.getElementById('nextButton').disabled = false;
+
+            updateStatus();
+        }
+
+        function nextCase() {
+            if (currentIndex >= cases.length - 1) {
                 showResults();
                 return;
             }
 
-            const question = quizData[currentQuestionIndex];
-            hasAnswered = false;
-            selectedAnswer = null;
-
-            document.getElementById('quizProgress').textContent = 
-                `問題 ${currentQuestionIndex + 1} / ${quizData.length}`;
-            
-            document.getElementById('currentQuestion').textContent = question.question;
-            
-            const selectionsEl = document.getElementById('selections');
-            selectionsEl.innerHTML = '';
-            
-            question.selections.forEach((selection, index) => {
-                const li = document.createElement('li');
-                li.className = 'selection-item';
-                li.textContent = selection;
-                li.onclick = () => selectAnswer(index);
-                selectionsEl.appendChild(li);
-            });
-
-            document.getElementById('answerFeedback').style.display = 'none';
-            document.getElementById('nextBtn').style.display = 'none';
-            document.getElementById('finishBtn').style.display = 'none';
+            currentIndex += 1;
+            showCase();
         }
 
-        // 答え選択
-        function selectAnswer(index) {
-            if (hasAnswered) return;
-
-            selectedAnswer = index;
-            hasAnswered = true;
-
-            const question = quizData[currentQuestionIndex];
-            const correctAnswer = question.answer;
-            const isCorrect = selectedAnswer === correctAnswer;
-
-            if (isCorrect) {
-                score++;
-            }
-
-            const selectionItems = document.querySelectorAll('.selection-item');
-            selectionItems.forEach((item, i) => {
-                item.onclick = null;
-                if (i === correctAnswer) {
-                    item.classList.add('correct');
-                } else if (i === selectedAnswer && !isCorrect) {
-                    item.classList.add('incorrect');
-                }
-            });
-
-            const feedback = document.getElementById('answerFeedback');
-            feedback.style.display = 'block';
-            if (isCorrect) {
-                feedback.className = 'answer-feedback correct';
-                feedback.textContent = '正解！';
-            } else {
-                feedback.className = 'answer-feedback incorrect';
-                feedback.textContent = `不正解。正解は「${question.selections[correctAnswer]}」です。`;
-            }
-
-            if (currentQuestionIndex < quizData.length - 1) {
-                document.getElementById('nextBtn').style.display = 'inline-block';
-            } else {
-                document.getElementById('finishBtn').style.display = 'inline-block';
-            }
-        }
-
-        // 次の問題
-        function nextQuestion() {
-            currentQuestionIndex++;
-            showQuestion();
-        }
-
-        // 結果表示
         function showResults() {
-            document.getElementById('quizPlaying').style.display = 'none';
-            document.getElementById('quizResults').style.display = 'block';
-            
-            const percentage = Math.round((score / quizData.length) * 100);
-            document.getElementById('finalScore').textContent = 
-                `${score} / ${quizData.length} 問正解 (${percentage}%)`;
+            const percent = Math.round((score / cases.length) * 100);
+            document.getElementById('casePanel').hidden = true;
+            document.getElementById('resultPanel').hidden = false;
+            document.getElementById('finalScore').textContent = `${score} / ${cases.length} 件正解 (${percent}%)`;
+            document.getElementById('finalComment').textContent = getFinalComment(percent);
+            updateStatus();
         }
 
-        // クイズリスタート
         function restartQuiz() {
-            document.getElementById('quizResults').style.display = 'none';
-            document.getElementById('quizSetup').style.display = 'block';
-            quizData = [];
-            currentQuestionIndex = 0;
+            cases = [];
+            currentIndex = 0;
             score = 0;
+            answered = false;
+            currentTheme = '-';
+            currentDifficulty = '-';
+            document.getElementById('setupPanel').hidden = false;
+            document.getElementById('casePanel').hidden = true;
+            document.getElementById('resultPanel').hidden = true;
+            updateStatus();
         }
+
+        function updateStatus() {
+            document.getElementById('progressText').textContent = cases.length ? `${Math.min(currentIndex + 1, cases.length)} / ${cases.length}` : '-';
+            document.getElementById('scoreText').textContent = String(score);
+            document.getElementById('themeText').textContent = currentTheme;
+            document.getElementById('difficultyText').textContent = currentDifficulty;
+        }
+
+        function setLoading(isLoading) {
+            document.getElementById('loading').classList.toggle('show', isLoading);
+        }
+
+        function getFinalComment(percent) {
+            if (percent === 100) return '全件、矛盾を見抜きました。評決は文句なしです。';
+            if (percent >= 70) return 'かなり鋭い審理でした。証拠を見る目があります。';
+            if (percent >= 40) return 'いくつか見落としがあります。証拠と証言を一つずつ照合しましょう。';
+            return '今回は証言に惑わされました。次の法廷で再挑戦しましょう。';
+        }
+
+        function createFallbackCases(theme, difficulty, count) {
+            const templates = [
+                {
+                    caseTitle: `${theme}の消えた鍵`,
+                    caseSummary: '昼休みのあと、保管棚にあった鍵がなくなった。鍵は15時に給湯室で見つかった。',
+                    evidence: [
+                        '受付カメラには12時10分に佐藤が保管棚の前を通る姿が映っている。',
+                        '給湯室は12時から13時まで清掃中で、入室できなかった。',
+                        '鍵は15時に給湯室の棚から見つかった。'
+                    ],
+                    testimonies: [
+                        '佐藤: 昼休み中、保管棚の近くには行っていません。',
+                        '田中: 13時半ごろ、給湯室の前で佐藤さんを見ました。',
+                        '鈴木: 15時すぎに鍵がないことに気づきました。'
+                    ],
+                    answer: 0,
+                    explanation: '証拠では佐藤が12時10分に保管棚の前を通ったとされており、「近くには行っていない」という証言と矛盾します。',
+                    judgeComment: '映像証拠と証言の食い違いは見逃せません。'
+                },
+                {
+                    caseTitle: `${difficulty}な倉庫の足跡`,
+                    caseSummary: '倉庫の箱が開けられていた。床には濡れた足跡が残っていた。',
+                    evidence: [
+                        '雨が降り始めたのは14時だった。',
+                        '足跡は倉庫の入口から棚まで続いていた。',
+                        '倉庫の扉は13時50分まで施錠されていた。'
+                    ],
+                    testimonies: [
+                        '山田: 13時半に倉庫へ入り、棚を確認しました。',
+                        '中村: 14時すぎ、入口の床が濡れているのを見ました。',
+                        '小林: 15時に箱が開いていることを確認しました。'
+                    ],
+                    answer: 0,
+                    explanation: '倉庫は13時50分まで施錠されていたため、山田の「13時半に入った」という証言は矛盾します。',
+                    judgeComment: '時刻の矛盾が決め手です。'
+                },
+                {
+                    caseTitle: `${theme}の割れた花瓶`,
+                    caseSummary: '会議室の花瓶が割れていた。直前まで部屋には3人が出入りしていた。',
+                    evidence: [
+                        '花瓶が割れる音は10時20分に聞こえた。',
+                        '会議室の予約記録では、10時から10時30分まで高橋が使用していた。',
+                        '清掃員は10時40分に破片を確認した。'
+                    ],
+                    testimonies: [
+                        '高橋: 10時20分には会議室にいましたが、花瓶には触っていません。',
+                        '伊藤: 10時20分の音を廊下で聞きました。',
+                        '森: 私が会議室に入ったのは10時10分で、その時点で花瓶はすでに割れていました。'
+                    ],
+                    answer: 2,
+                    explanation: '花瓶が割れる音は10時20分に聞こえているため、10時10分時点ですでに割れていたという森の証言は矛盾します。',
+                    judgeComment: '時系列を整理すれば、矛盾は明確です。'
+                }
+            ];
+
+            return Array.from({ length: count }, (_, index) => templates[index % templates.length]);
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        document.addEventListener('DOMContentLoaded', updateStatus);
     </script>
 </body>
 </html>
